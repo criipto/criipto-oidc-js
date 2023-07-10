@@ -1,4 +1,4 @@
-export { generate as generatePKCE } from './pkce';
+export { generate as generatePKCE, generatePlatform as generatePlatformPKCE} from './pkce';
 export { parseQueryResponse, parseURLResponse } from './response';
 
 import { type OpenIDConfiguration } from './OpenIDConfiguration';

@@ -1,5 +1,5 @@
 function base64URLEncode(input : Uint8Array) {
-  return window.btoa(String.fromCharCode(...input))
+  return btoa(String.fromCharCode(...input))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
@@ -12,15 +12,31 @@ export interface PKCE {
 }
 export type PKCEPublicPart = Omit<PKCE, 'code_verifier'>;
 
-export async function generate() : Promise<PKCE> {
+interface PartialCrypto {
+  getRandomValues<T extends Uint8Array>(t: T): T,
+  subtle: {
+    digest(algorithm: AlgorithmIdentifier, data: BufferSource): Promise<ArrayBuffer>
+  }
+}
+
+function browserCrypto() : PartialCrypto {
+  return {
+    getRandomValues: crypto.getRandomValues.bind(crypto),
+    subtle: ((crypto as any).webkitSubtle as SubtleCrypto) ?? crypto.subtle
+  }
+}
+
+export async function generatePlatform(crypto: PartialCrypto) : Promise<PKCE> {
   const encoder = new TextEncoder();
-  const bytes = new Uint8Array(32);
-  window.crypto.getRandomValues(bytes);
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
   const code_verifier = base64URLEncode(bytes);
   const code_challenge_method = 'S256';
-  const subtle = ((window.crypto as any).webkitSubtle as SubtleCrypto) ?? window.crypto.subtle;
-
-  const buffer = await subtle.digest('SHA-256', encoder.encode(code_verifier));
-  const code_challenge = await base64URLEncode(new Uint8Array(buffer));
+  const buffer = await crypto.subtle.digest('SHA-256', encoder.encode(code_verifier));
+  const code_challenge = base64URLEncode(new Uint8Array(buffer));
   return {code_verifier, code_challenge, code_challenge_method};
+}
+
+export function generate() : Promise<PKCE> {
+  const crypto = browserCrypto();
+  return generatePlatform(crypto);
 }
