@@ -1,27 +1,27 @@
 import {describe, expect, it, jest, beforeEach} from '@jest/globals';
-import { codeExchange, userInfo } from '../index';
+import { buildAuthorizeURL, codeExchange, userInfo } from '../index';
 import type {OpenIDConfiguration} from '../OpenIDConfiguration';
 
 const mockedFetch = jest.fn() as jest.Mocked<typeof fetch>
 global.fetch = mockedFetch;
 
+const configuration : OpenIDConfiguration = {
+  client_id: `urn:grn:${Math.random().toString()}`,
+  issuer: `https://some.authority.com`,
+  jwks_uri: `https://some.authority.com/jwks/${Math.random().toString()}`,
+  authorization_endpoint: `https://some.authority.com/authorize/${Math.random().toString()}`,
+  token_endpoint: `https://some.authority.com/token/${Math.random().toString()}`,
+  userinfo_endpoint: `https://some.authority.com/userinfo/${Math.random().toString()}`,
+  end_session_endpoint: "",
+  response_types_supported: [],
+  response_modes_supported: [],
+  subject_types_supported: [],
+  acr_values_supported: [],
+  id_token_signing_alg_values_supported: []
+};
+
 describe('codeExchange', () => {
   beforeEach(() => {mockedFetch.mockClear();});
-
-  const configuration : OpenIDConfiguration = {
-    client_id: `urn:grn:${Math.random().toString()}`,
-    issuer: `https://some.authority.com`,
-    jwks_uri: `https://some.authority.com/jwks/${Math.random().toString()}`,
-    authorization_endpoint: `https://some.authority.com/authorize/${Math.random().toString()}`,
-    token_endpoint: `https://some.authority.com/token/${Math.random().toString()}`,
-    userinfo_endpoint: `https://some.authority.com/userinfo/${Math.random().toString()}`,
-    end_session_endpoint: "",
-    response_types_supported: [],
-    response_modes_supported: [],
-    subject_types_supported: [],
-    acr_values_supported: [],
-    id_token_signing_alg_values_supported: []
-  };
 
   it('handles successfull PKCE exchange', async () => {
     const code = Math.random().toString();
@@ -160,5 +160,20 @@ describe('userInfo', () => {
         'Authorization': 'Bearer ' + access_token,
       },
     });
+  });
+});
+
+describe('buildAuthorizeURL', () => {
+  it('does not include undefined values', () => {
+    const redirect_uri = Math.random().toString();
+    const actual = buildAuthorizeURL(configuration, {
+      redirect_uri,
+      scope: `openid`,
+      response_mode: 'query',
+      response_type: 'code',
+      login_hint: undefined
+    });
+
+    expect(actual.href).toEqual(`${configuration.authorization_endpoint}?client_id=${encodeURIComponent(configuration.client_id)}&scope=openid&redirect_uri=${encodeURIComponent(redirect_uri)}&response_mode=query&response_type=code`)
   });
 });

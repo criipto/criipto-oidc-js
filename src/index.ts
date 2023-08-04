@@ -18,6 +18,7 @@ export function buildLogoutURL(
   const url = new URL(configuration.end_session_endpoint);
 
   for (const [k, v] of Object.entries(options)) {
+    if (v === undefined || v === null) continue;
     url.searchParams.set(k, v);
   }
   return url;
@@ -48,6 +49,7 @@ export function buildAuthorizeURL(
 
   for (const [k, v] of Object.entries(options)) {
     if (k === 'acr_values') continue;
+    if (v === undefined || v === null) continue;
     url.searchParams.set(k, v as string);
   }
 
