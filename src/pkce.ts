@@ -29,10 +29,16 @@ function browserCrypto() : PartialCrypto {
 export async function generatePlatform(crypto: PartialCrypto) : Promise<PKCE> {
   const encoder = new TextEncoder();
   const bytes = crypto.getRandomValues(new Uint8Array(32));
+  if (bytes === null || bytes.byteLength === 0) throw new Error('crypto.getRandomValues returned null/no bytes');
+
   const code_verifier = base64URLEncode(bytes);
   const code_challenge_method = 'S256';
   const buffer = await crypto.subtle.digest('SHA-256', encoder.encode(code_verifier));
   const code_challenge = base64URLEncode(new Uint8Array(buffer));
+
+  if (!code_verifier?.length) throw new Error('Unable to generate PKCE, code_verifier blank');
+  if (!code_challenge?.length) throw new Error('Unable to generate PKCE, code_challenge blank');
+
   return {code_verifier, code_challenge, code_challenge_method};
 }
 
