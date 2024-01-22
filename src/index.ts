@@ -1,3 +1,5 @@
+import { KeyLike, SignJWT } from 'jose';
+
 export { generate as generatePKCE, generatePlatform as generatePlatformPKCE} from './pkce';
 export { parseQueryResponse, parseURLResponse } from './response';
 
@@ -93,14 +95,31 @@ export async function codeExchange(
     code: string,
     redirect_uri: string
     client_secret: string
+  } | {
+    code: string
+    redirect_uri: string
+    key: KeyLike
   }
 ) : Promise<{id_token: string, access_token: string} | ErrorResponse> {
   const body = new URLSearchParams();
+  
   body.append('grant_type', "authorization_code");
   body.append('code', options.code);
   body.append('client_id', configuration.client_id);
   body.append('redirect_uri', options.redirect_uri);
   if ("code_verifier" in options) body.append('code_verifier', options.code_verifier);
+  if ("key" in options) {
+    body.append('client_assertion_type', 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer');
+
+    const jwt = await new SignJWT({ 'sub': configuration.client_id })
+      .setProtectedHeader({ alg: 'RS256' })
+      .setIssuedAt()
+      .setIssuer(configuration.client_id)
+      .setAudience(configuration.issuer)
+      .setExpirationTime('5m')
+      .sign(options.key);
+    body.append('client_assertion', jwt);
+  }
 
   const response = await fetch(configuration.token_endpoint, {
     method: 'POST',
