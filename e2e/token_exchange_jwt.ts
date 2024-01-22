@@ -34,7 +34,7 @@ const redirect_uri = 'https://jwt.io/';
   const result = await codeExchange(openIDConfiguration, {
     code,
     redirect_uri,
-    key: privateKey,
+    signingKey: privateKey,
   });
   
   if ("error" in result) {

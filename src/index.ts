@@ -98,7 +98,7 @@ export async function codeExchange(
   } | {
     code: string
     redirect_uri: string
-    key: KeyLike
+    signingKey: KeyLike
   }
 ) : Promise<{id_token: string, access_token: string} | ErrorResponse> {
   const body = new URLSearchParams();
@@ -108,7 +108,7 @@ export async function codeExchange(
   body.append('client_id', configuration.client_id);
   body.append('redirect_uri', options.redirect_uri);
   if ("code_verifier" in options) body.append('code_verifier', options.code_verifier);
-  if ("key" in options) {
+  if ("signingKey" in options) {
     body.append('client_assertion_type', 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer');
 
     const jwt = await new SignJWT({ 'sub': configuration.client_id })
@@ -117,7 +117,7 @@ export async function codeExchange(
       .setIssuer(configuration.client_id)
       .setAudience(configuration.issuer)
       .setExpirationTime('5m')
-      .sign(options.key);
+      .sign(options.signingKey);
     body.append('client_assertion', jwt);
   }
 
