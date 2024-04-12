@@ -123,11 +123,14 @@ export async function codeExchange(
 
   const response = await fetch(configuration.token_endpoint, {
     method: 'POST',
+    cache: 'no-store',
+    redirect: 'manual',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       ...("client_secret" in options ? {
         Authorization: "Basic " + btoa(`${encodeURIComponent(configuration.client_id)}:${options.client_secret}`)
-      } : {})
+      } : {}),
+      'cache-control': 'no-cache, no-store, must-revalidate'
     },
     body: body.toString()
   });
@@ -143,8 +146,11 @@ export async function userInfo(
 ) : Promise<{[key: string]: string} | ErrorResponse> {
   const response = await fetch(configuration.userinfo_endpoint, {
     method: 'GET',
+    cache: 'no-store',
+    redirect: 'manual',
     headers: {
-      Authorization: `Bearer ${accessToken}`
+      Authorization: `Bearer ${accessToken}`,
+      'cache-control': 'no-cache, no-store, must-revalidate'
     },
   });
 
