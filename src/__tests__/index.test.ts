@@ -47,9 +47,12 @@ describe('codeExchange', () => {
 
     expect(actual).toStrictEqual({id_token, access_token});
     expect(mockedFetch).toHaveBeenCalledWith(configuration.token_endpoint, {
+      cache: 'no-store',
+      redirect: 'manual',
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        "cache-control": "no-cache, no-store, must-revalidate"
       },
       body: `grant_type=authorization_code&code=${code}&client_id=${encodeURIComponent(configuration.client_id)}&redirect_uri=${redirect_uri}&code_verifier=${code_verifier}`
     });
@@ -77,9 +80,12 @@ describe('codeExchange', () => {
 
     expect(actual).toStrictEqual({error, error_description: undefined});
     expect(mockedFetch).toHaveBeenCalledWith(configuration.token_endpoint, {
+      cache: 'no-store',
+      redirect: 'manual',
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        "cache-control": "no-cache, no-store, must-revalidate"
       },
       body: `grant_type=authorization_code&code=${code}&client_id=${encodeURIComponent(configuration.client_id)}&redirect_uri=${redirect_uri}&code_verifier=${code_verifier}`
     });
@@ -109,10 +115,13 @@ describe('codeExchange', () => {
 
     expect(actual).toStrictEqual({id_token, access_token});
     expect(mockedFetch).toHaveBeenCalledWith(configuration.token_endpoint, {
+      cache: 'no-store',
+      redirect: 'manual',
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + btoa(`${encodeURIComponent(configuration.client_id)}:${client_secret}`)
+        'Authorization': 'Basic ' + btoa(`${encodeURIComponent(configuration.client_id)}:${client_secret}`),
+        "cache-control": "no-cache, no-store, must-revalidate"
       },
       body: `grant_type=authorization_code&code=${code}&client_id=${encodeURIComponent(configuration.client_id)}&redirect_uri=${redirect_uri}`
     });
@@ -155,9 +164,12 @@ describe('userInfo', () => {
 
     expect(actual).toStrictEqual(claims);
     expect(mockedFetch).toHaveBeenCalledWith(configuration.userinfo_endpoint, {
+      cache: 'no-store',
+      redirect: 'manual',
       method: 'GET',
       headers: {
         'Authorization': 'Bearer ' + access_token,
+        "cache-control": "no-cache, no-store, must-revalidate"
       },
     });
   });

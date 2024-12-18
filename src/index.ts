@@ -91,17 +91,21 @@ export async function codeExchange(
     code: string,
     redirect_uri: string
     code_verifier: string
+    fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
   } | {
     code: string,
     redirect_uri: string
     client_secret: string
+    fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
   } | {
     code: string
     redirect_uri: string
     signingKey: KeyLike
+    fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
   }
 ) : Promise<{id_token: string, access_token: string} | ErrorResponse> {
   const body = new URLSearchParams();
+  const fetch = options.fetch ?? globalThis.fetch;
   
   body.append('grant_type', "authorization_code");
   body.append('code', options.code);
@@ -142,8 +146,12 @@ export async function codeExchange(
 
 export async function userInfo(
   configuration: OpenIDConfiguration,
-  accessToken: string
+  accessToken: string,
+  options?: {
+    fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+  }
 ) : Promise<{[key: string]: string} | ErrorResponse> {
+  const fetch = options?.fetch ?? globalThis.fetch;
   const response = await fetch(configuration.userinfo_endpoint, {
     method: 'GET',
     cache: 'no-store',

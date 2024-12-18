@@ -51,13 +51,18 @@ export class OpenIDConfigurationManager {
   authority: string
   clientID: string
   cache: Cache<OpenIDConfiguration> | undefined
+  private _fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 
-  constructor(authority: string, clientID: string, cacheStorage?: Storage) {
+  constructor(authority: string, clientID: string, options?: {
+    cacheStorage?: Storage,
+    fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+  }) {
     if (!authority.startsWith('http')) throw new Error(`OpenIDConfigurationManager authority should start with https://`);
     this.authority = authority;
     this.clientID = clientID;
-    this.cache = cacheStorage ? new Cache(cacheStorage, 60000) : undefined;
-  }
+    this.cache = options?.cacheStorage ? new Cache(options.cacheStorage, 60000) : undefined;
+    this._fetch = fetch ?? globalThis.fetch;
+  } 
 
   async fetch(): Promise<OpenIDConfiguration> {
     const url = `${this.authority}/.well-known/openid-configuration?client_id=${this.clientID}`;
@@ -65,7 +70,7 @@ export class OpenIDConfigurationManager {
     const cacheEntry = this.cache?.get(url);
     if (cacheEntry) return cacheEntry;
 
-    const response = await fetch(url);
+    const response = await this._fetch(url);
     const metadata : OpenIDConfiguration = await response.json();
     metadata.client_id = this.clientID;
 
