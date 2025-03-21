@@ -61,7 +61,7 @@ export class OpenIDConfigurationManager {
     this.authority = authority;
     this.clientID = clientID;
     this.cache = options?.cacheStorage ? new Cache(options.cacheStorage, 60000) : undefined;
-    this._fetch = fetch ?? globalThis.fetch;
+    this._fetch = options?.fetch ?? globalThis.fetch;
   } 
 
   async fetch(): Promise<OpenIDConfiguration> {
