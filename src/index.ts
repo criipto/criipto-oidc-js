@@ -91,7 +91,7 @@ export async function pushAuthorizeRequest(
   configuration: OpenIDConfiguration,
   options: {
     request: AuthorizeURLOptions,
-    authentication: {client_secret: string} | {client_assertion: string},
+    authentication: {client_secret: string} | {client_assertion: string} | null,
     fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
   }
 ) : Promise<{request_uri: string}> {
@@ -99,7 +99,7 @@ export async function pushAuthorizeRequest(
   const url = buildAuthorizeURL(configuration, options.request);
   if (!configuration.pushed_authorization_request_endpoint) throw new Error(`OpenID Provider does not support 'pushed_authorization_request_endpoint'`);
   const body = new URLSearchParams(Object.fromEntries(url.searchParams.entries()));
-  if ("client_assertion" in options.authentication) {
+  if (options.authentication && "client_assertion" in options.authentication) {
     body.append('client_assertion_type', 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer');
     body.append('client_assertion', options.authentication.client_assertion);
   }
@@ -109,7 +109,7 @@ export async function pushAuthorizeRequest(
     redirect: 'manual',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      ...("client_secret" in options.authentication ? {
+      ...(options.authentication && "client_secret" in options.authentication ? {
         Authorization: "Basic " + btoa(`${encodeURIComponent(configuration.client_id)}:${options.authentication.client_secret}`)
       } : {}),
       'cache-control': 'no-cache, no-store, must-revalidate'
