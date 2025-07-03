@@ -188,4 +188,22 @@ describe('buildAuthorizeURL', () => {
 
     expect(actual.href).toEqual(`${configuration.authorization_endpoint}?client_id=${encodeURIComponent(configuration.client_id)}&scope=openid&redirect_uri=${encodeURIComponent(redirect_uri)}&response_mode=query&response_type=code`)
   });
+
+  it('can build signed request', () => {
+    const request = Math.random().toString();
+    const actual = buildAuthorizeURL(configuration, {
+      request
+    });
+
+    expect(actual.href).toEqual(`${configuration.authorization_endpoint}?client_id=${encodeURIComponent(configuration.client_id)}&request=${encodeURIComponent(request)}`)
+  });
+
+  it('can build PAR request', () => {
+    const request_uri = Math.random().toString();
+    const actual = buildAuthorizeURL(configuration, {
+      request_uri
+    });
+
+    expect(actual.href).toEqual(`${configuration.authorization_endpoint}?client_id=${encodeURIComponent(configuration.client_id)}&request_uri=${encodeURIComponent(request_uri)}`)
+  });
 });

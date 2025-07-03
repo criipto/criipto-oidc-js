@@ -43,12 +43,14 @@ export type AuthorizeURLOptions = {
 
 export function buildAuthorizeURL(
   configuration: OpenIDConfiguration,
-  options: AuthorizeURLOptions | {request_uri: string}
+  options: AuthorizeURLOptions | {request_uri: string} | {request: string}
 ) {
   const url = new URL(configuration.authorization_endpoint);
   url.searchParams.set('client_id', configuration.client_id);
   if ("request_uri" in options) {
     url.searchParams.set('request_uri', options.request_uri);
+  } else if ("request" in options) {
+    url.searchParams.set('request', options.request);
   } else {
     url.searchParams.set('scope', options.scope ? options.scope : 'openid');
 
@@ -90,7 +92,7 @@ export function parseAuthorizeOptionsFromUrl(input: string | URL) : Partial<Auth
 export async function pushAuthorizeRequest(
   configuration: OpenIDConfiguration,
   options: {
-    request: AuthorizeURLOptions,
+    request: AuthorizeURLOptions | {request: string},
     authentication: {client_secret: string} | {client_assertion: string} | null,
     fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
   }
